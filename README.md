@@ -1,19 +1,56 @@
 # Rock-Paper-Scissors MLOps System
 
-This project implements a complete MLOps pipeline for an image classification model that predicts Rock, Paper, or Scissors from an uploaded image.
-The system includes model training, a FastAPI inference service, a retraining endpoint, a Streamlit user interface, and GitHub source code management.
+🎯 Complete MLOps pipeline for Rock-Paper-Scissors image classification with FastAPI, Streamlit, and automated retraining.
 
+## 🚀 Quick Start
 
+### 1. Clone the repository
+```bash
+git clone https://github.com/Umwanankabandi-liliane/RockPaperScissors-MLops.git
+cd RockPaperScissors-MLops
+```
+
+### 2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Get the trained model
+**⚠️ IMPORTANT:** Model files are NOT in the repo (too large for GitHub).
+
+**Option A:** Train your own model (Recommended)
+```bash
+python train_model.py
+```
+
+**Option B:** Download pre-trained model
+- Download from: [Google Drive Link - TO BE ADDED]
+- Extract to `models/` folder
+
+### 4. Run the application
+
+**Backend (FastAPI):**
+```bash
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Frontend (Streamlit):**
+```bash
+streamlit run app.py
+```
+
+Visit: http://localhost:8501
 
 ## 1. Project Overview
 
-This repository contains all components required to build, deploy, and retrain an image classifier. The main objectives are:
+This repository contains all components required to build, deploy, and retrain an image classifier:
 
-* Train a Rock-Paper-Scissors classifier using TensorFlow.
-* Serve predictions through a FastAPI endpoint.
-* Allow model retraining using new user-provided data.
-* Provide an interactive Streamlit interface for prediction and retraining.
-* Prepare the system for deployment on services such as Render or HuggingFace.
+* ✅ Train Rock-Paper-Scissors classifier using TensorFlow
+* ✅ FastAPI backend with prediction & retraining endpoints
+* ✅ Streamlit UI for predictions and bulk uploads
+* ✅ Model evaluation with multiple metrics
+* ✅ Load testing with Locust
+* ✅ Docker deployment ready
 
 
 ## 3. Model Training

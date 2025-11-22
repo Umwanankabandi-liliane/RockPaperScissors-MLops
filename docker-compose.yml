@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"  # FastAPI
+      - "8501:8501"  # Streamlit
+    volumes:
+      - ./models:/app/models
+      - ./uploaded_data:/app/uploaded_data
+      - ./retrain_data:/app/retrain_data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

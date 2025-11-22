@@ -3,17 +3,33 @@ import numpy as np
 from PIL import Image
 import io
 import time
-import keras
 import os
 import tensorflow as tf
 
 app = FastAPI()
 
 # ===============================
-# LOAD SAVEDMODEL (KERAS 3)
+# LOAD MODEL
 # ===============================
-MODEL_PATH = "models/rps_model"   # Folder that contains saved_model.pb
-model = keras.layers.TFSMLayer(MODEL_PATH, call_endpoint="serve")
+MODEL_PATH = "models/rps_model"
+H5_MODEL_PATH = "models/rps_model.h5"
+
+# Try loading model (TFSMLayer for SavedModel or load_model for .h5)
+model = None
+try:
+    if os.path.exists(MODEL_PATH):
+        print(f"Loading SavedModel from {MODEL_PATH}...")
+        model = tf.keras.layers.TFSMLayer(MODEL_PATH, call_endpoint="serve")
+        print("✅ SavedModel loaded successfully")
+    elif os.path.exists(H5_MODEL_PATH):
+        print(f"Loading H5 model from {H5_MODEL_PATH}...")
+        model = tf.keras.models.load_model(H5_MODEL_PATH)
+        print("✅ H5 Model loaded successfully")
+    else:
+        print("⚠️  No model found! Run build.py or train_model.py first.")
+except Exception as e:
+    print(f"❌ Error loading model: {e}")
+    model = None
 
 # Class names (MUST match order used during training)
 class_names = ["Rock", "Paper", "Scissors"]

@@ -47,6 +47,16 @@ uploaded_data/*
 retrain_data/*
 !retrain_data/.gitkeep
 
+# Model files (too large for GitHub - will be generated during deployment)
+models/*.keras
+models/*.h5
+models/*.zip
+models/rps_model/
+models.zip
+
+# Keep only the README in models folder
+!models/README.md
+
 # Logs
 *.log
 logs/

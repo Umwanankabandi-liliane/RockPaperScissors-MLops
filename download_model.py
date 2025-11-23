@@ -23,9 +23,14 @@ def download_model():
     os.makedirs(MODEL_DIR, exist_ok=True)
     
     try:
-        # Download zip file
+        # Download zip file with fuzzy matching for large files
         zip_path = os.path.join(MODEL_DIR, "model.zip")
-        gdown.download(DOWNLOAD_URL, zip_path, quiet=False)
+        gdown.download(DOWNLOAD_URL, zip_path, quiet=False, fuzzy=True)
+        
+        # Check if download was successful
+        if not os.path.exists(zip_path):
+            print("❌ Download failed - file not found")
+            return False
         
         # Extract
         print("📦 Extracting model...")
@@ -39,6 +44,7 @@ def download_model():
         
     except Exception as e:
         print(f"❌ Error downloading model: {e}")
+        print("💡 Please ensure the Google Drive file is shared publicly (Anyone with link can view)")
         return False
 
 if __name__ == "__main__":

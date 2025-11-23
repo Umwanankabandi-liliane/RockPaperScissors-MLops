@@ -18,11 +18,12 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p models uploaded_data retrain_data
 
-# Download pre-trained model from Google Drive
-RUN python download_model.py
-
 # Expose FastAPI port
 EXPOSE 8000
 
-# Run only FastAPI
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Copy and make start script executable
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Run startup script that downloads model and starts FastAPI
+CMD ["/app/start.sh"]

@@ -15,11 +15,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create necessary directories and build model
+# Create necessary directories
 RUN mkdir -p models uploaded_data retrain_data
 
-# Build/train model during Docker build
-RUN python build.py
+# Download pre-trained model from Google Drive
+RUN python download_model.py
 
 # Expose FastAPI port
 EXPOSE 8000

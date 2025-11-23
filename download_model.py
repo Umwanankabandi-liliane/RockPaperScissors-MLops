@@ -9,8 +9,8 @@ import zipfile
 MODEL_DIR = "models"
 MODEL_PATH = os.path.join(MODEL_DIR, "rps_model")
 
-# Replace with your Google Drive file ID or direct link
-GOOGLE_DRIVE_FILE_ID = "YOUR_FILE_ID_HERE"  # Get from shareable link
+# Google Drive file ID from your uploaded model
+GOOGLE_DRIVE_FILE_ID = "1O6A0JYikCRlW1OF7p7TIAxDtEKTPZ2Zc"
 DOWNLOAD_URL = f"https://drive.google.com/uc?id={GOOGLE_DRIVE_FILE_ID}"
 
 def download_model():

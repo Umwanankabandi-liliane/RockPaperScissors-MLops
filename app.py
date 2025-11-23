@@ -6,7 +6,7 @@ import io
 # =========================
 # CONFIG
 # =========================
-FASTAPI_URL = "http://127.0.0.1:8000"   # Your backend URL
+FASTAPI_URL = "https://rockpaperscissors-mlops-7.onrender.com"  # Your FastAPI backend URL
 
 st.set_page_config(page_title="Rock Paper Scissors Classifier", layout="centered")
 

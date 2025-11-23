@@ -145,6 +145,8 @@ async def retrain_model():
 
         return {
             "message": "Model retrained successfully!",
-        "epochs": 3,
-        "samples_used": len(train_ds)
-    }
+            "epochs": 3,
+            "samples_used": len(train_ds)
+        }
+    except Exception as e:
+        return {"error": f"Retraining failed: {str(e)}"}

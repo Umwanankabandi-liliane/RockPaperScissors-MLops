@@ -47,13 +47,6 @@ uploaded_data/*
 retrain_data/*
 !retrain_data/.gitkeep
 
-# Model files (too large - download during deployment)
-models/
-*.keras
-*.h5
-*.pb
-*.zip
-
 # Logs
 *.log
 logs/

@@ -14,12 +14,12 @@ app = FastAPI()
 MODEL_PATH = "models/rps_model"
 H5_MODEL_PATH = "models/rps_model.h5"
 
-# Try loading model (TFSMLayer for SavedModel or load_model for .h5)
+# Try loading model
 model = None
 try:
     if os.path.exists(MODEL_PATH):
         print(f"Loading SavedModel from {MODEL_PATH}...")
-        model = tf.keras.layers.TFSMLayer(MODEL_PATH, call_endpoint="serve")
+        model = tf.keras.models.load_model(MODEL_PATH)
         print("✅ SavedModel loaded successfully")
     elif os.path.exists(H5_MODEL_PATH):
         print(f"Loading H5 model from {H5_MODEL_PATH}...")
@@ -53,36 +53,33 @@ def uptime():
 # ===============================
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    # Read bytes
-    contents = await file.read()
+    if model is None:
+        return {"error": "Model not loaded. Please check server logs."}
+    
+    try:
+        # Read bytes
+        contents = await file.read()
 
-    # Load image
-    image = Image.open(io.BytesIO(contents)).convert("RGB")
-    image = image.resize((150, 150))
+        # Load image
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        image = image.resize((150, 150))
 
-    # Preprocess
-    img_array = np.array(image).astype("float32") / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
+        # Preprocess
+        img_array = np.array(image).astype("float32") / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
 
-    # Run prediction
-    result = model(img_array)
+        # Run prediction
+        preds = model.predict(img_array, verbose=0)
 
-    # Convert SavedModel output to numpy
-    if isinstance(result, dict):
-        key = list(result.keys())[0]
-        preds = result[key].numpy()
-    elif isinstance(result, (list, tuple)):
-        preds = result[0].numpy()
-    else:
-        preds = result.numpy()
+        idx = int(np.argmax(preds[0]))
+        confidence = float(np.max(preds[0]))
 
-    idx = int(np.argmax(preds[0]))
-    confidence = float(np.max(preds[0]))
-
-    return {
-        "prediction": class_names[idx],
-        "confidence": confidence
-    }
+        return {
+            "prediction": class_names[idx],
+            "confidence": confidence
+        }
+    except Exception as e:
+        return {"error": f"Prediction failed: {str(e)}"}
 
 
 # ===============================
@@ -94,54 +91,60 @@ async def retrain_model():
     Retrains the model using images in retrain_data/ folder.
     Folder structure MUST be:
       retrain_data/
-         rock/
-         paper/
-         scissors/
+         Rock/
+         Paper/
+         Scissors/
     """
-    DATA_DIR = "retrain_data"
+    try:
+        DATA_DIR = "retrain_data"
 
-    if not os.path.exists(DATA_DIR):
-        return {"error": "retrain_data folder not found."}
+        if not os.path.exists(DATA_DIR):
+            return {"error": "retrain_data folder not found."}
+        
+        # Check if folder has subdirectories
+        subdirs = [d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join(DATA_DIR, d))]
+        if len(subdirs) == 0:
+            return {"error": "No class folders found in retrain_data/"}
 
-    # Load dataset
-    train_ds = tf.keras.utils.image_dataset_from_directory(
-        DATA_DIR,
-        image_size=(150, 150),
-        batch_size=16,
-        shuffle=True
-    )
+        # Load dataset
+        train_ds = tf.keras.utils.image_dataset_from_directory(
+            DATA_DIR,
+            image_size=(150, 150),
+            batch_size=16,
+            shuffle=True
+        )
 
-    # Normalization
-    norm = tf.keras.layers.Rescaling(1./255)
+        # Normalization
+        norm = tf.keras.layers.Rescaling(1./255)
 
-    # Simple CNN
-    new_model = tf.keras.Sequential([
-        tf.keras.layers.Input(shape=(150, 150, 3)),
-        norm,
-        tf.keras.layers.Conv2D(32, 3, activation="relu"),
-        tf.keras.layers.MaxPooling2D(),
-        tf.keras.layers.Conv2D(64, 3, activation="relu"),
-        tf.keras.layers.MaxPooling2D(),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(64, activation="relu"),
-        tf.keras.layers.Dense(3, activation="softmax")
-    ])
+        # Simple CNN
+        new_model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=(150, 150, 3)),
+            norm,
+            tf.keras.layers.Conv2D(32, 3, activation="relu"),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Conv2D(64, 3, activation="relu"),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(64, activation="relu"),
+            tf.keras.layers.Dense(3, activation="softmax")
+        ])
 
-    new_model.compile(
-        optimizer="adam",
-        loss="sparse_categorical_crossentropy",
-        metrics=["accuracy"]
-    )
+        new_model.compile(
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"]
+        )
 
-    # Train 3 epochs
-    history = new_model.fit(train_ds, epochs=3)
+        # Train 3 epochs
+        history = new_model.fit(train_ds, epochs=3)
 
-    # Export new SavedModel
-    SAVE_PATH = "models/rps_model"
-    new_model.export(SAVE_PATH)
+        # Export new SavedModel
+        SAVE_PATH = "models/rps_model"
+        new_model.export(SAVE_PATH)
 
-    return {
-        "message": "Model retrained successfully!",
+        return {
+            "message": "Model retrained successfully!",
         "epochs": 3,
         "samples_used": len(train_ds)
     }

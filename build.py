@@ -76,7 +76,7 @@ if not os.path.exists("data/train"):
     # Save model
     os.makedirs("models", exist_ok=True)
     print("💾 Saving model...")
-    model.export("models/rps_model")
+    model.save("models/rps_model")
     
     print("✅ Model trained and saved successfully!")
     

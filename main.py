@@ -68,8 +68,16 @@ async def predict(file: UploadFile = File(...)):
         img_array = np.array(image).astype("float32") / 255.0
         img_array = np.expand_dims(img_array, axis=0)
 
-        # Run prediction
-        preds = model.predict(img_array, verbose=0)
+        # Run prediction - handle both Keras model and exported SavedModel
+        if hasattr(model, 'predict'):
+            preds = model.predict(img_array, verbose=0)
+        else:
+            # For exported models, call directly
+            preds = model(img_array)
+            if isinstance(preds, dict):
+                # Get first output
+                preds = list(preds.values())[0]
+            preds = preds.numpy()
 
         idx = int(np.argmax(preds[0]))
         confidence = float(np.max(preds[0]))
@@ -139,9 +147,9 @@ async def retrain_model():
         # Train 3 epochs
         history = new_model.fit(train_ds, epochs=3)
 
-        # Export new SavedModel
+        # Save model
         SAVE_PATH = "models/rps_model"
-        new_model.export(SAVE_PATH)
+        new_model.save(SAVE_PATH)
 
         return {
             "message": "Model retrained successfully!",
